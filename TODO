@@ -1,0 +1,15 @@
+= TODO =========================================================================
+
+( ) Pull classes into separate submodules...
+	entity.py
+		Entity
+		Job
+		Party
+	spell.py
+		Spell
+	(others...)
+
+( ) De-duplicate some code, especially in and around combat mechanics...
+
+( ) Collect various constants / string dictionaries into some common file
+
