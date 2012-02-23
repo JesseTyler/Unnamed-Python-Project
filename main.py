@@ -1128,3 +1128,5 @@ class P_menu(b_con):
 if __name__ == '__main__':
 	console = Menu()
 	console.cmdloop() 
+
+# vim: sw=4 ts=4 noexpandtab
