@@ -1,4 +1,5 @@
-#lolgit
+#!/usr/bin/env python
+
 #TO-DO:
 # Framework = DONE - Add Inventory/Items/Equipment
 # Framework = DONE - Multi-level spells (Powering up to cast)
