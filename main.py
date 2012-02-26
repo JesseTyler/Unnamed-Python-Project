@@ -287,6 +287,12 @@ ent_blackmamba = Entity(job_Serpent, "Black Mamba")
 ent_cobra = Entity(job_Serpent, "Paura")
 ent_ogre = Entity(job_Humanoid, "Ogre")
 ent_ifrit = Entity(job_magical_Summon, "Ifrit")
+ent_jackie = Entity(job_Fighter, "Jackie Chan")
+ent_shad = Entity(job_Thief, "Shad Gaspard")
+ent_gandalf = Entity(job_Mage, "Gandalf the Grey")
+
+#   Test Party
+party = Party((ent_jackie, ent_shad, ent_gandalf))
 
 #
 #   Begin Spell Declarations
