@@ -324,5 +324,7 @@ class Party(object):
         if members is not None:
             self.members = members
 
+    def __repr__(self):
+        return str(self.members)
 
 # vim: sw=4 ts=4 expandtab
