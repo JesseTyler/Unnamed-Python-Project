@@ -54,7 +54,10 @@
 #           Worry about later: Story, Sounds, Final Art Style
 
 import random, math, copy, time, cmd, pickle, os, re
+
 from pprint import pprint
+from entity import *
+from spell import *
 
 def quit():
     return
@@ -75,186 +78,7 @@ group = []
 
 if not os.path.exists('./save/'):
     os.mkdir('./save/')
-
-class Entity:
-        #Define spells by: class type(Entity)  ..  type_1 = type("Rabbit", 20, 500, 20, 10, 0, 0)
-        def __init__(self, id, name, lvl, hp, xp, arm, atk, mp, marm, agi, spells, abilities, r_spell):
-            self.id = id
-            self.name = name
-            self.job = name
-            self.lvl = lvl
-            self.hp = hp
-            self.xp = xp
-            self.arm = arm
-            self.atk = atk
-            self.mp = mp
-            self.marm = marm
-            self.agi = agi
-            self.spells = spells
-            self.abilities = abilities
-            self.maxhp = hp
-            self.maxmp = mp
-            self.defhp = hp
-            self.defmp = mp
-            self.defatk = atk
-            self.defmarm = marm
-            self.defagi = agi
-            self.dead = False
-            self.turn = 0
-            self.items = {}
-            self.xptn = random.randrange(40,60,1)
-            self.origtn = self.xptn
-            self.maxlvl = 60
-            self.r_spells = {'fire' : r_spell[0], 'water' : r_spell[1], 'ice' : r_spell[2], 'thunder' : r_spell[3], 'arcane' : r_spell[4]}
-            #self.kwargs = [kwargs]
-            #for n,v in kwargs.items():
-            #   setattr(self, n, v)
-            self.poisondmg = 0
-            self.status = []
-            #print self.name
-            
-        def __repr__(self):
-            return self.name    
-        
-        def get_status(self):
-            spell_names = ""
-            ability_names = ""
-            status_names = ""
-            if self.spells:
-                spell_names = ', '.join([spell_id[x].name for x in self.spells])
-            if self.abilities:
-                ability_names = ', '.join([ability_id[x].name for x in self.abilities])
-            if self.status:
-                status_names = ', '.join([status_id[x].name for x in self.status])
-            print "Name: "+self.name, "("+self.job+")\n", "Level:", self.lvl, "\nHP:", self.hp, "/", self.maxhp, "\nMP:", self.mp, "/", self.maxmp,\
-                "\nXP:", self.xp, "/", self.xptn,\
-                "\nArmor:", self.arm, "\nAttack Power:", self.atk, "\nAgility:", self.agi,\
-                "\nBase Magic Armor:", self.marm,\
-                "\nSpell Resistances:", " Fire:", self.r_spells['fire'], " Water:", self.r_spells['water'], " Ice:", self.r_spells['ice'], " Thunder:", self.r_spells['thunder'], " Arcane:", self.r_spells['arcane'],\
-                "\nSpells:", spell_names, "\nAbilities:", ability_names,\
-                "\nStatus Effects:", status_names
-        
-        def get_hp(self):
-            return self.hp
-        
-        def set_hp(self, hp):
-            self.hp = hp
-            
-        def get_mp(self):
-            return self.mp
-        
-        def set_mp(self, mp):
-            self.mp = mp
-
-        def level_up(self):
-            if self.lvl < self.maxlvl:
-                orighp = self.maxhp
-                origmp = self.maxmp
-                self.lvl += 1
-                if self.lvl < 15:
-                    self.xptn = math.trunc(round((self.origtn * 1.3) * self.lvl))
-                elif self.lvl >= 15 and self.lvl < 30:
-                    self.xptn = math.trunc(round((self.origtn * 1.1) * self.lvl))
-                elif self.lvl >= 30 and self.lvl < 50:
-                    self.xptn = math.trunc(round((self.origtn * 1.05) * self.lvl))
-                elif self.lvl >= 50 and self.lvl <= 60:
-                    self.xptn = math.trunc(round((self.origtn * 1.025) * self.lvl))
-                self.xptn = math.trunc(round(self.xptn))
-                self.maxhp += math.trunc(round(self.lvl * random.choice([3.0, 3.5, 4.0])))
-                self.maxmp += math.trunc(round(self.lvl * random.choice([3.0, 3.5, 4.0])))
-                self.atk += random.choice([1.2, 1.4, 1.6])
-                self.agi += random.choice([1.2, 1.4, 1.6])
-                self.xp = 0
-                self.marm += 1
-                self.hp = self.maxhp
-                self.mp = self.maxmp
-                print "%s has levelled up to Level %d!" % (self.name, self.lvl)
-                print "%s has gained %d health points and %d mana points!" % (self.name, (self.hp - orighp), (self.mp - origmp))  
-            else:
-                print "%s is already max level!" % (self.name)
-                
-class Magic:
-        #Define spells by: class Spell(Magic)  ..  spell_1 = Spell("Fire Blast", 20, 10)
-        def __init__(self, id, name, mpcost, mindmg, maxdmg, type, s_flag, s_action):
-            self.id = id
-            self.name = name
-            self.mpcost = mpcost
-            self.mindmg = mindmg
-            self.maxdmg = maxdmg
-            self.type = type
-            self.s_flag = s_flag
-            self.s_action = s_action
-        
-        def __repr__(self):
-            return self.name
-            
-class Physical:
-        #Define abilities by: class Ability(Physical)  ..  ability_1 = Ability("Rake", 10)
-        def __init__(self, id, name, mindmg, maxdmg, s_flag, s_action):
-            self.id = id
-            self.name = name
-            self.mindmg = mindmg
-            self.maxdmg = maxdmg
-            self.s_flag = s_flag
-            self.s_action = s_action
-            
-        def __repr__(self):
-            return self.name
-            
-class Consumable:
-        def __init__(self, id, name, amount, type):
-            self.id = id
-            self.name = name
-            self.amount = amount
-            self.type = type
-            return name
-            
-        def use(self, target):
-            if self.type in "heal_hp":
-                target.hp =+ self.amount
-                if target.hp > target.maxhp:
-                    target.hp = target.maxhp
-                party.items[str(self)] -= 1
-                if party.items[str(self)] <= 0:
-                    del party.items[str(self)]
-                print "%s was healed for %d and is now at %d HP!" % (target.name, self.amount, target.hp)
-                return
-
-        def __repr__(self):
-            return self.name
-            
-class Party:
-        #Define Party: var = Party(size, members)
-        def __init__(self, maxsize, membercopy):
-            self.maxsize = maxsize
-            self.members = []
-            self.items = {}
-            self.gold = 0
-            
-            while len(self.members) < maxsize:
-                self.members += membercopy
-
-            self.partyhp = self.get_hp()
-            
-        def get_hp(self):
-            total = 0
-            for x in self.members:
-                total += x.hp
-            return total
-            
-        def set_xp(self, xp):
-            for x in self.members:
-                if x.hp > 0:
-                    x.xp += xp
-                else:
-                    return
-        
-        def avg(self):
-            return sum([x.lvl for x in self.members]) / len(self.members)
-            
-        def __repr__(self):
-            return ', '.join([x.name for x in self.members])
-    
+                            
 def attack(h_flag, attacker, defender, spell, ability):
     #attack(<Mob = 0, Human = 1>, attacker, defender)
     if attacker.get_hp() <= 0:
@@ -516,7 +340,7 @@ def target(target):
         return
 
 def m_party_gen():
-    global party
+    global party    
     global m_party
     p_avg = 0
     m_party_gen.m_avg = 0
@@ -560,110 +384,75 @@ def party_gen():
     while len(tempparty) < maxsize: 
         tempparty += copy.deepcopy([random.choice(human_id.values())])
     party = Party(maxsize, tempparty)
-            
-#Set up some default Mobs/Spells
-class Mob(Entity):
-    def __init__(self, id, name, lvl, hp, xp, arm, atk, mp, marm, agi, spells, abilities, r_spell, gold, items, info):
-        Entity.__init__(self, id, name, lvl, hp, xp, arm, atk, mp, marm, agi, spells, abilities, r_spell)
-        self.info = info
-        self.gold = gold
-        self.items = items
-        mob_id[self.id] = self
-        
-    def get_status(self):
-        spell_names = ""
-        ability_names = ""
-        status_names = ""
-        if self.spells:
-            for x in self.spells:
-                spell_names += spell_id[x].name
-                spell_names += ", "
-            if spell_names.endswith(' '):
-                spell_names = spell_names[:-2]
-        if self.abilities:
-            for x in self.abilities:
-                ability_names += ability_id[x].name
-                ability_names += ", "
-            if ability_names.endswith(' '):
-                ability_names = ability_names[:-2]
-        if self.status:
-            for x in self.status:
-                status_names += status_id[x].name
-                status_names += ", "
-            if status_names.endswith(' '):
-                status_names = status_names[:-2]
-        print "Name: "+self.name, "\nLevel:", self.lvl, "\nHP:", self.hp, "\nMP:", self.mp,\
-            "\nXP:", self.xp,\
-            "\nArmor:", self.arm, "\nAttack Power:", self.atk, "\nAgility:", self.agi,\
-            "\nBase Magic Armor:", self.marm,\
-            "\nSpell Resistances:", " Fire:", self.r_spells['fire'], " Water:", self.r_spells['water'], " Ice:", self.r_spells['ice'], " Thunder:", self.r_spells['thunder'], " Arcane:", self.r_spells['arcane'],\
-            "\nSpells:", spell_names, "\nAbilities:", ability_names,\
-            "\nInfo:", self.info
 
-class Human(Entity):
-    def __init__(self, id, name, lvl, hp, xp, arm, atk, mp, marm, agi, spells, abilities, r_spell):
-        Entity.__init__(self, id, name, lvl, hp, xp, arm, atk, mp, marm, agi, spells, abilities, r_spell)
-        human_id[self.id] = self
-        
-class Summon(Entity):
-    def __init__(self, id, name, lvl, hp, xp, arm, atk, mp, marm, agi, spells, abilities, r_spell):
-        Entity.__init__(self, id, name, lvl, hp, xp, arm, atk, mp, marm, agi, spells, abilities, r_spell)
-        summon_id[self.id] = self
-  
-class Spell(Magic):
-    def __init__(self, id, name, mpcost, mindmg, maxdmg, type, s_flag, s_action):
-        Magic.__init__(self, id, name, mpcost, mindmg, maxdmg, type, s_flag, s_action)
-        spell_id[self.id] = self
-        
-class Ability(Physical):
-    def __init__(self, id, name, mindmg, maxdmg, s_flag, s_action):
-        Physical.__init__(self, id, name, mindmg, maxdmg, s_flag, s_action)
-        ability_id[self.id] = self
+# Default attribute ranges (min_base, max_base, min_per_level, max_per_level)
+#   Max HP    (maxhp):     17, 23, 1, 3
+#   Max MP    (maxmp):     17, 23, 1, 3
+#   Attack    (atk):       8,  12, 0, 2
+#   Defense   (def):       8,  12, 0, 2
+#   Accuracy  (acc):       8,  12, 0, 2
+#   Evasion   (eva):       8,  12, 0, 2
+#   Magic Atk (matk):      8,  12, 0, 2
+#   Magic Def (mdef):      8,  12, 0, 2
+#   Magic Acc (macc):      8,  12, 0, 2
+#   Magic Eva (meva):      8,  12, 0, 2
+#   Goblin, Zombie, (Fire/Ice Wraith), Bat, Bomb, Slime, Box
 
-class Item(Consumable):
-    def __init__(self, id, name, amount, type):
-        Consumable.__init__(self, id, name, amount, type)
-        item_id[self.id] = self
-        
-#  - Spider, Goblin, Zombie, (Fire/Ice Wraith), Cobra, Bat, Toad, Bomb, Snake, Black Mamba, Moth, Imp, Slime, Bandit, Bandit Leader,
-#    Box.
-#           ID  NAME                LVL      HP     XP     ARM     ATK     MP      MARM      AGI     SPELLS         ABILITIES   Resistances [Fire, Water, Ice, Thunder, Arcane]     Gold        Items       Info
-mob_1 = Mob(1,  "Rabbit",           1,       10,    6,     0,      2,      0,      0,        10,         [],            [1,2],              [5,    0,     5,   0,       0],         5,          [1],            "A small brown hare.")
-mob_2 = Mob(2,  "Wolf",             2,       20,    10,    2,      5,      10,     0,        15,         [],            [2],                [0,    0,     0,   0,       0],         5,          [1],            "A battle-worn grey wolf.")
-mob_3 = Mob(3,  "Spider",           1,       15,    10,    0,      4,      10,     0,        12,         [],            [2],                [0,    0,     0,   0,       0],         5,          [1],            "A dog-sized poisonous spider.")
-mob_4 = Mob(4,  "Cobra",            2,       30,    15,    5,      6,      10,     0,        10,         [],            [2, 6],             [0,    0,     0,   0,       0],         5,          [1],            "La paura del Cobra.")
-mob_5 = Mob(5,  "Moth",             3,       40,    20,    3,      5,      10,     5,        13,         [],            [6],                [0,    0,     0,   0,       0],         5,          [1],            "A very hungry moth, aching of starvation for your robes.")
-mob_6 = Mob(6,  "Imp",              3,       45,    25,    2,      3,      30,     5,        10,         [1, 2],        [2],                [0,    0,     0,   0,       0],         5,          [1],            "Can't we all justI get along?")
-mob_7 = Mob(7,  "Toad",             3,       50,    30,    0,      2,      10,     0,        15,         [],            [7],                [0,    0,     0,   0,       0],         5,          [1],            "Ribbit.")
-mob_8 = Mob(8,  "Ogre",             10,      200,   200,   10,     10,     10,     0,        5,          [],            [3, 4, 5],          [0,    0,     0,   0,       0],         5,          [1],            "Ogre, SMASH!")
-mob_9 = Mob(9,  "Black Mamba",      33,      200,   1124,  24,     30,     0,      0,        50,         [],            [8],                [0,    0,     0,   0,       0],         5,          [1],            "Kobe!")
+job_Rabbit = Job('Rabbit', attr_ranges={'atk': (6,10,0,2), 'def': (6,10,0,2), 'eva': (10,14,0,4)})
+job_Wolf   = Job('Wolf',   attr_ranges={'eva': (11,15,0,3)})
+job_Spider = Job('Spider', attr_ranges={'def': (6,10,0,2), 'eva': (9,13,0,3)})
+job_Serpent = Job('Serpent',  attr_ranges={'atk': (7,11,0,3), 'acc': (10,14,0,3), 'eva': (10,14,0,3)})
+job_Moth    = Job('Moth',   attr_ranges={'eva': (12,16,0,2), 'mdef': (10,14,0,2), 'meva': (10,14,0,2)})
+job_Demon   = Job('Demon',  attr_ranges={'maxhp': (20,26,1,3), 'maxmp': (19,25,1,3), 'matk': (10,14,0,2), 'mdef': (10,14,0,2), 'macc': (9,11,0,2)})
+job_Frog    = Job('Frog', attr_ranges={'def': (6,10,0,2)})
+job_Humanoid = Job('Humanoid')
+job_magical_Summon = Job('Guardian', attr_ranges={'maxhp': (22,28,2,6), 'maxmp': (22,26,2,6), 'atk': (10,14,0,2), 'def': (12,16,1,3), 'acc': (16,20,1,3), 'eva': (16,20,1,3), 'matk': (16,20,1,2), 'mdef': (16,20,2,6)})
+job_physical_Summon = Job('Guardian', attr_ranges={'maxhp': (22,28,3,8), 'maxmp': (22,26,2,6), 'atk': (10,14,2,6), 'def': (12,16,2,6), 'acc': (16,20,2,6), 'eva': (16,20,2,6), 'matk': (16,20,2,4), 'mdef': (16,20,1,3)})
+job_Fighter = Job('Fighter', attr_ranges={'atk': (10,12,0,3), 'def': (10,12,0,3)})
+job_Thief = Job('Thief', attr_ranges={'atk': (9,11,0,2), 'acc': (10,14,0,3), 'eva': (10,14,0,3)})
+job_Mage = Job('Mage', attr_ranges={'atk': (4,8,0,1), 'def': (4,8,0,2), 'matk': (10,14,0,3), 'mdef': (10,14,0,3), 'macc': (10,14,0,3), 'meva': (10,14,0,3)})
 
-#               ID  NAME            LVL     HP       XP     ARM      ATK     MP      MARM    AGI    SPELLS      ABILITIES     Resistances [Fire, Water, Ice, Thunder, Arcane]
-human_1 = Human(1,  "Fighter",      1,      20,      0,     4,       2,      10,     0,      10,        [],     [4, 5],                   [0,    0,     0,   0,       0])
-human_2 = Human(2,  "Thief",        1,      20,      0,     4,       2,      10,     0,      15,        [],     [4, 5],                   [0,    0,     0,   0,       0])
-human_3 = Human(3,  "Mage",         1,      20,      0,     0,       0,      30,     0,      10,        [1, 2], [],                       [0,    0,     0,   0,       0])
-#                 ID    NAME            LVL     HP       XP     ARM      ATK     MP      MARM    AGI    SPELLS      ABILITIES     Resistances [Fire, Water, Ice, Thunder, Arcane]
-summon_1 = Summon(1,    "Ifrit",        10,     250,     0,     5,       15,     300,    0,      20,    [1, 2],     [],                       [0,    0,     0,   0,       0])
-#               ID  NAME                    MP          MINDMG          MAXDMG      Type        Special Flag            Special Action
-spell_1 = Spell(1,  "Fire Blast",           6,          6,              10,         "fire",     False,                  0)
-spell_2 = Spell(2,  "Ice Bolt",             4,          4,              8,          "ice",      False,                  0)
-spell_3 = Spell(3,  "Meteor",               25,         35,             50,         "fire",     False,                  0)
-#             ID    NAME        Amount      Type
-item_1 = Item(1,    "Potion",   20,         "heal_hp")
-#                   ID    NAME                          MINDMG          MAXDMG      Special Flag            Special Action
-ability_1 = Ability(1,    "Rake",                       3,              5,          False,                  0)
-ability_2 = Ability(2,    "Bite",                       5,              7,          False,                  0)
-ability_3 = Ability(3,    "Crush",                      20,             25,         False,                  0)
-ability_4 = Ability(4,    "Kick",                       6,              9,          False,                  0)
-ability_5 = Ability(5,    "Punch",                      5,              7,          False,                  0)
-ability_6 = Ability(6,    "Poison Fang",                8,              10,         False,                  0)
-ability_7 = Ability(7,    "Croak",                      0,              0,          True,                   "print \"Toad croaks.\"")
-ability_8 = Ability(8,    "Fang Dunk",                  25,             50,         False,                  0)
+#
+#   Begin Specific Entities
+#
+
+ent_blackmamba = Entity(job_Serpent, "Black Mamba")
+ent_cobra = Entity(job_Serpent, "Paura")
+ent_ogre = Entity(job_Humanoid, "Ogre")
+ent_ifrit = Entity(job_magical_Summon, "Ifrit")
+
+#
+#   Begin Spell Declarations
+#
+
+spell_fireball = Spell("Fire Ball", 4, "damage health")
+spell_icebolt = Spell("Ice Bolt", 2, ("damage health", "status slow"))
+spell_meteor = Spell("Meteor", 4, "damage health")
+
+#
+#   Begin Item Declarations
+#
+
+#item_potion = Item("Potion", 20, "heal hp")
+
+
+#
+#   Begin Ability Declarations
+#
+
+ability_bite = Spell("Bite", 0, "damage health")
+ability_rake = Spell("Rake", 0, "damage health")
+ability_crush = Spell("Crush", 0, "damage health")
+ability_kick = Spell("Kick", 0, ("damage health", "status confuse"))
+ability_punch = Spell("Punch", 0, "damage health")
+ability_poisonfang = Spell("Poison Fang", 0, ("damage health", "status poison"))
+ability_croak = Spell("Croak", 0, "do croak")
+ability_fangdunk = Spell("Fang Dunk", 0, "twotoothed jam")
 
 #Define Predetermined Mob Parties
-mob_p1 = [copy.deepcopy(mob_id[1])] 
-mob_p2 = [copy.deepcopy(mob_id[1]), copy.deepcopy(mob_id[1])]
-mob_p3 = [copy.deepcopy(mob_id[1]), copy.deepcopy(mob_id[1]), copy.deepcopy(mob_id[1])]
+#mob_p1 = [copy.deepcopy(mob_id[1])] 
+#mob_p2 = [copy.deepcopy(mob_id[1]), copy.deepcopy(mob_id[1])]
+#mob_p3 = [copy.deepcopy(mob_id[1]), copy.deepcopy(mob_id[1]), copy.deepcopy(mob_id[1])]
 
 class b_con(cmd.Cmd):
     
@@ -847,7 +636,7 @@ class Menu(b_con):
                 console.cmdloop()
             else:
                 print "Save files do not exist! Please start a new game."
-                sleep(2)
+                time.sleep(2)
                 self.do_start(self)
         elif args is "3":
             return -1
@@ -860,10 +649,10 @@ class P_menu(b_con):
     global debug
     debug = 0
     tempparty = []
-    tempparty += copy.deepcopy([human_id[1]])
-    tempparty += copy.deepcopy([human_id[2]])
-    tempparty += copy.deepcopy([human_id[3]])
-    party = Party(3, tempparty)
+    #tempparty += copy.deepcopy([human_id[1]])
+    #tempparty += copy.deepcopy([human_id[2]])
+    #tempparty += copy.deepcopy([human_id[3]])
+    #party = Party(3, tempparty)
     tempparty = []
     
     def __init__(self):
