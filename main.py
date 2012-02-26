@@ -80,13 +80,6 @@ if not os.path.exists('./save/'):
     os.mkdir('./save/')
                             
 def attack(h_flag, attacker, defender, spell, ability):
-    #attack(<Mob = 0, Human = 1>, attacker, defender)
-    if attacker.get_hp() <= 0:
-        return
-    if h_flag is 0 and defender.get_hp() <= 0:
-        defender = random.choice(party.members)
-#Begin Mob Attack Section
-    elif h_flag is 0 and defender.get_hp() > 0: 
         choices = []
         if len(attacker.spells):
             spell = spell_id[random.choice(attacker.spells)]
@@ -98,9 +91,7 @@ def attack(h_flag, attacker, defender, spell, ability):
                 if defender.r_spells[spell.type]:
                     s_resist =+ math.trunc(round(defender.r_spells[spell.type]))
                 s_dmg = random.randrange(spell_id[spell.id].mindmg, spell_id[spell.id].maxdmg, 1)
-                #print "Dmg: ", s_dmg
                 s_crittotal = math.trunc(round(s_dmg * random.uniform(2,3)))
-                #print "Crit: ", s_crittotal
                 s_crittotal_orig = s_crittotal
                 if s_crittotal <= 0:
                     s_crittotal = spell_id[spell.id].mindmg + spell_id[spell.id].maxdmg / 2
@@ -125,127 +116,6 @@ def attack(h_flag, attacker, defender, spell, ability):
             ability = 0
         critcheck = random.randint(1,10)
         choice = random.choice(choices)
-        #print choice
-        dodgecheck = (random.randint(1,100) + defender.agi - attacker.agi)
-        orighp = defender.get_hp()
-        if choice is spell and attacker.mp < choice.mpcost:
-            print "%s tried casting %s but it fizzled!" % (attacker.name, choice.name)
-        elif choice is spell and critcheck >= 8:
-            if dodgecheck < 90:
-                if math.trunc(round(defender.hp - round(s_crittotal - s_resist))) < 0:
-                    defender.set_hp(math.trunc(round(defender.get_hp() + round(s_crittotal - s_resist))))
-                    healed = math.trunc(round(defender.get_hp() - round(s_crittotal - s_resist))) 
-                    print "%s (%d) was healed by %s for %d with %s! %s is now at %d health!" % (defender.name, orighp, attacker.name, healed, spell_id[choice.id].name, defender.name, defender.get_hp())
-                elif math.trunc(round(defender.hp - round(s_crittotal - s_resist))) >= 0:
-                    defender.set_hp(math.trunc(round(defender.get_hp() - round(s_crittotal - s_resist))))
-                    if defender.get_hp() <= 0:
-                        print "%s (%d) was crit by %s for %d (%d resisted) with %s! %s is now dead!" % (defender.name, orighp, attacker.name, (s_crittotal - s_resist), s_resist, spell_id[choice.id].name, defender.name)
-                        defender.set_hp(0)
-                        attacker.mp -= choice.mpcost
-                        if attacker.mp < 0:
-                            attacker.mp = 0
-                    elif defender.get_hp() > 0:
-                        print "%s (%d) was crit by %s for %d (%d resisted) with %s! %s is now at %d health!" % (defender.name, orighp, attacker.name, (s_crittotal - s_resist), s_resist, spell_id[choice.id].name, defender.name, defender.get_hp())
-                        attacker.mp -= choice.mpcost
-                        if attacker.mp < 0:
-                            attacker.mp = 0
-                    return
-                elif dodgecheck >= 90:
-                    print "%s casts %s... but %s dodged!" % (attacker.name, choice.name, defender.name)
-        elif choice is spell and critcheck < 8:
-            if dodgecheck < 90:
-                if math.trunc(round(defender.hp - round(s_dmg - s_resist))) < 0:
-                    healed = math.trunc(round(defender.get_hp() - round(s_dmg - s_resist))) 
-                    defender.set_hp(math.trunc(round(defender.get_hp() + round(s_dmg - s_resist))))
-                    print "%s (%d) was healed by %s for %d with %s! %s is now at %d health!" % (defender.name, orighp, attacker.name, healed, spell_id[choice.id].name, defender.name, defender.get_hp())
-                elif math.trunc(round(defender.hp - round(s_dmg - s_resist))) >= 0:
-                    defender.set_hp(math.trunc(round(defender.get_hp() - (s_dmg - s_resist))))
-                    if defender.get_hp() <= 0:
-                        print "%s (%d) was hit by %s for %d (%d resisted) with %s! %s is now dead!" % (defender.name, orighp, attacker.name, (s_dmg - s_resist), s_resist, spell_id[choice.id].name, defender.name)
-                        defender.set_hp(0)
-                        attacker.mp -= choice.mpcost
-                        if attacker.mp < 0:
-                            attacker.mp = 0
-                    elif defender.get_hp() > 0:
-                        print "%s (%d) was hit by %s for %d (%d resisted) with %s! %s is now at %d health!" % (defender.name, orighp, attacker.name, (s_dmg - s_resist), s_resist, spell_id[choice.id].name, defender.name, defender.get_hp())
-                        attacker.mp -= choice.mpcost
-                        if attacker.mp < 0:
-                            attacker.mp = 0
-                elif dodgecheck >= 90:
-                    print "%s attacks with %s... but %s dodged!" % (attacker.name, choice.name, defender.name) 
-                return
-        elif choice is ability and critcheck >=8:
-            if dodgecheck < 90:
-                if a_crittotal < defender.arm:
-                    print "%s tried attacking %s with %s... but it had no effect!" % (attacker.name, defender.name, ability_id[choice.id].name)
-                    return
-                defender.set_hp(math.trunc(round(defender.get_hp() - a_crittotal)))
-                if defender.get_hp() <= 0:
-                    print "%s (%d) was crit by %s for %d (%d resisted) with %s! %s is now dead!" % (defender.name, orighp, attacker.name, a_crittotal, a_crittotal_orig, ability_id[choice.id].name, defender.name)
-                    defender.set_hp(0)
-                elif defender.get_hp() > 0:
-                    print "%s (%d) was crit by %s for %d (%d resisted) with %s! %s is now at %d health!" % (defender.name, orighp, attacker.name, a_crittotal, a_crittotal_orig, ability_id[choice.id].name, defender.name, defender.get_hp())
-                return
-            elif dodgecheck >= 90:
-                print "%s attacks with %s... but %s dodged!" % (attacker.name, choice.name, defender.name)
-        elif choice is ability and critcheck < 8:
-            if dodgecheck < 90:
-                if (a_dmg + attacker.atk) < defender.arm:
-                    print "%s tried attacking %s with %s... but it had no effect!" % (attacker.name, defender.name, ability_id[choice.id].name)
-                    return
-                defender.set_hp(math.trunc(round(defender.get_hp() - ((a_dmg + attacker.atk) - defender.arm))))
-                if defender.get_hp() <= 0:
-                    print "%s (%d) was hit by %s for %d (%d resisted) with %s! %s is now dead!" % (defender.name, orighp, attacker.name, (a_dmg + attacker.atk) - defender.arm, defender.arm, ability_id[choice.id].name, defender.name)
-                    defender.set_hp(0)
-                elif defender.get_hp() > 0:
-                    print "%s (%d) was hit by %s for %d (%d resisted) with %s! %s is now at %d health!" % (defender.name, orighp, attacker.name, (a_dmg + attacker.atk) - defender.arm, defender.arm, ability_id[choice.id].name, defender.name, defender.get_hp())
-            elif dodgecheck >= 90:
-                print "%s attacks with %s... but %s dodged!" % (attacker.name, choice.name, defender.name) 
-            return
-#End Mob Attack
-#Begin Human Attack
-    if h_flag is 1 and defender.get_hp() <= 0:
-        defender = random.choice(m_party.members)
-    elif h_flag is 1 and defender.get_hp() > 0:
-        choices = []
-        if len(attacker.spells):
-            spell = spell_id[random.choice(attacker.spells)]
-            if spell.s_flag:
-                exec(spell.s_action)
-                return
-            else:
-                s_resist = defender.marm
-                if defender.r_spells[spell.type]:
-                    s_resist =+ math.trunc(round(defender.r_spells[spell.type]))
-                s_dmg = random.randrange(spell_id[spell.id].mindmg, spell_id[spell.id].maxdmg, 1)
-                #print "Dmg: ", s_dmg
-                s_crittotal = math.trunc(round(s_dmg * random.uniform(2,3)))
-                #print "Crit: ", s_crittotal
-                s_crittotal_orig = s_crittotal
-                if s_crittotal <= 0:
-                    s_crittotal = spell_id[spell.id].mindmg + spell_id[spell.id].maxdmg / 2
-                choices += [spell]
-        elif not attacker.spells:
-            spell = 0
-        if len(attacker.abilities):
-            ability = ability_id[random.choice(attacker.abilities)]
-            if ability.s_flag:
-                exec(ability.s_action)
-                return
-            else:   
-                a_dmg = random.randrange(ability_id[ability.id].mindmg, ability_id[ability.id].maxdmg, 1)
-                a_crittotal = round((a_dmg * random.randint(2,3))) + attacker.atk
-                a_crittotal_orig = a_crittotal
-                a_crittotal = round(a_crittotal_orig - defender.arm)
-                a_crittotal_orig -= a_crittotal
-                if a_crittotal <= 0:
-                    a_crittotal = ability_id[ability.id].mindmg + ability_id[ability.id].maxdmg / 2
-                choices += [ability]
-        elif not attacker.abilities:
-            ability = 0
-        critcheck = random.randint(1,10)
-        choice = random.choice(choices)
-        #print choice
         dodgecheck = (random.randint(1,100) + defender.agi - attacker.agi)
         orighp = defender.get_hp()
         if choice is spell and attacker.mp < choice.mpcost:
@@ -322,9 +192,6 @@ def attack(h_flag, attacker, defender, spell, ability):
             elif dodgecheck >= 90:
                 print "%s attacks with %s... but %s dodged!" % (attacker.name, choice.name, defender.name) 
             return
-#Redundant/Unneeded? --v Check.
-        if h_flag is 1 and defender.get_hp() <= 0:
-            print attacker.name+" tries to attack but.. "+defender.name+" is dead!"
         return
             
 def target(target):
