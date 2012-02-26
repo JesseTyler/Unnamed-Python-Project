@@ -270,11 +270,17 @@ class Entity(object):
         Increase attributes as part of the level-up process.
         """
         # Generate per-level increases from job
-        awards = {attr: randint(bounds[2], bounds[3]) for attr, bounds in self.job.attr_ranges.items()}
-        for attr, value in awards.items():
-            self.attributes[attr] += value
-        self._hp += awards['maxhp']
-        self._mp += awards['maxmp']
+        
+        if self.level is self.job.max_level:
+            print("%s is already max level!" % (self.name))
+            return
+        else:
+            awards = {attr: randint(bounds[2], bounds[3]) for attr, bounds in self.job.attr_ranges.items()}
+            for attr, value in awards.items():
+                self.attributes[attr] += value
+            self._hp += awards['maxhp']
+            self._mp += awards['maxmp']
+            self._level += 1
 
     def restore_health(self):
         """
