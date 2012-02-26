@@ -1,5 +1,4 @@
 #   Graveyard of old class/function definitions for possible reference in order to free room in main.py
-
 #
 #   Entity Class
 #
