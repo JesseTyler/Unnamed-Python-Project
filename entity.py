@@ -29,7 +29,7 @@ def xp_for_level(level):
     2: 100xp    +100xp
     3: 300xp    +200xp
     4: 600xp    +300xp
-        ...
+        ...P
     """
     return 50 * level * (level - 1)
 
@@ -73,7 +73,7 @@ class Job(object):
 
     To create an Entity with a job, call the job's create_entity method.
     """
-    def __init__(self, name, attr_ranges=None, magic_resists=None):
+    def __init__(self, name, attr_ranges=None, magic_resists=None, items=None):
         self.name = name
         # Default attribute ranges (min_base, max_base, min_per_level, max_per_level)
         self.attr_ranges = {
@@ -101,6 +101,10 @@ class Job(object):
             self.magic_resists.update(magic_resists)
         
         self.max_level = 60
+
+        self.items = items
+
+        #self.attributes = {attr: randint(bounds[0], bounds[1]) for attr, bounds in self.job.attr_ranges.items()}
 
     def create_entity(self, unique_name=None):
         """
@@ -201,6 +205,8 @@ class Entity(object):
         """
         if level < self._level:
             raise ValueError("Cannot decrease Level.")
+        elif level == self.job.level:
+            return
         elif level == self._level:
             # Do nothing (Don't reduce XP to level threshold)
             return
@@ -271,7 +277,7 @@ class Entity(object):
         """
         # Generate per-level increases from job
         
-        if self.level is self.job.max_level:
+        if self.level == self.job.max_level:
             print("%s is already max level!" % (self.name))
             return
         else:
@@ -329,8 +335,14 @@ class Party(object):
     def __init__(self, members=None):
         if members is not None:
             self.members = members
+            self.items = {}
+            #for x in self.members:
+            #    print(x.job.items)
+            #    for each in x.job.items:
+            #        each =+ {self.items}
 
     def __repr__(self):
         return str(self.members)
+
 
 # vim: sw=4 ts=4 expandtab
